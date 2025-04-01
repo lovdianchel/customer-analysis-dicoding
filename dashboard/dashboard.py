@@ -82,8 +82,8 @@ def create_time_series_data(df):
     
     return orders_per_day, sales_per_day, order_status_per_day
 
-
-all_df = pd.read_csv("main_data.csv")
+file_url = "https://raw.githubusercontent.com/lovdianchel/customer-analysis-dicoding/refs/heads/main/dashboard/main_data.csv"
+all_df = pd.read_csv(file_url)
 
 datetime_columns = ["order_approved_at", "order_delivered_customer_date"]
 all_df.sort_values(by="order_approved_at", inplace=True)
