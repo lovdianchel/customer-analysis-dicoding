@@ -28,39 +28,6 @@ def create_sum_payment_value_items(df):
     sum_payment_value_items_df = df.groupby('product_category_name').payment_value.sum().sort_values(ascending=False).reset_index()
     return sum_payment_value_items_df
 
-# def create_bygender_df(df):
-#     bygender_df = df.groupby(by="gender").customer_id.nunique().reset_index()
-#     bygender_df.rename(columns={
-#         "customer_id": "customer_count"
-#     }, inplace=True)
-    
-#     return bygender_df
-
-# def create_byage_df(df):
-#     byage_df = df.groupby(by="age_group").customer_id.nunique().reset_index()
-#     byage_df.rename(columns={
-#         "customer_id": "customer_count"
-#     }, inplace=True)
-#     byage_df['age_group'] = pd.Categorical(byage_df['age_group'], ["Youth", "Adults", "Seniors"])
-    
-#     return byage_df
-
-def create_bystate_df(df):
-    bystate_df = df.groupby(by="customer_state").customer_id.nunique().reset_index()
-    bystate_df.rename(columns={
-        "customer_id": "customer_count"
-    }, inplace=True)
-    
-    return bystate_df
-
-def create_bycity_df(df):
-    bystate_df = df.groupby(by="customer_city").customer_id.nunique().reset_index()
-    bystate_df.rename(columns={
-        "customer_id": "customer_count"
-    }, inplace=True)
-    
-    return bystate_df
-
 def create_rfm_df(df):
     rfm_df = df.groupby(by="customer_id", as_index=False).agg({
         "order_approved_at": "max", #mengambil tanggal order terakhir
@@ -122,9 +89,6 @@ datetime_columns = ["order_approved_at", "order_delivered_customer_date"]
 all_df.sort_values(by="order_approved_at", inplace=True)
 all_df.reset_index(inplace=True)
 
-# for column in datetime_columns:
-#     all_df[column] = pd.to_datetime(all_df[column])
-
 for column in datetime_columns:
     all_df[column] = pd.to_datetime(all_df[column], format="%Y-%m-%d %H:%M:%S", errors='coerce')
 
@@ -132,7 +96,7 @@ min_date = all_df["order_approved_at"].min()
 max_date = all_df["order_approved_at"].max()
 
 with st.sidebar:
-#     # Menambahkan logo perusahaan
+    # Menambahkan logo perusahaan
     st.image("https://github.com/dicodingacademy/assets/raw/main/logo.png")
     
     # Mengambil start_date & end_date dari date_input
@@ -149,7 +113,6 @@ daily_orders_df = create_daily_orders_df(main_df)
 sum_order_items_df = create_sum_order_items_df(main_df)
 sum_payment_value_items_df = create_sum_payment_value_items(main_df)
 wordcloud = create_wordcloud(main_df)
-bystate_df = create_bystate_df(main_df)
 customer_state_df = create_customer_state(main_df)
 customer_city_df = create_customer_city(main_df)
 rfm_df = create_rfm_df(main_df)
@@ -337,26 +300,7 @@ ax.tick_params(axis='x', labelsize=15)
 
 st.pyplot(fig)
 
-# Plot 3: Waktu Pengiriman vs Estimasi
-
-# fig, ax = plt.subplots(figsize=(16, 8))
-# ax.plot(
-#     delivery_vs_estimated,
-#     linewidth=2,
-#     color="r",
-#     label="Waktu Pengiriman vs Estimasi"
-# )
-# ax.set_xlabel("Bulan")
-# ax.set_ylabel("Hari")
-# ax.set_title("Waktu Pengiriman vs Estimasi")
-# ax.tick_params(axis='y', labelsize=20)
-# ax.tick_params(axis='x', labelsize=15)
-
-# st.pyplot(fig)
-
-# st.write(delivery_vs_estimated)
-
-# Plot 4: Status Order per Bulan
+# Plot 3: Status Order per Bulan
 
 fig, ax = plt.subplots(figsize=(16, 8))
 ax.plot(
