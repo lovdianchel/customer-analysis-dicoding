@@ -116,7 +116,7 @@ def create_time_series_data(df):
     return orders_per_day, sales_per_day, order_status_per_day
 
 
-all_df = pd.read_csv("all_data.csv")
+all_df = pd.read_csv("main_data.csv")
 
 datetime_columns = ["order_approved_at", "order_delivered_customer_date"]
 all_df.sort_values(by="order_approved_at", inplace=True)
