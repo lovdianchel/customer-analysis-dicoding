@@ -173,14 +173,14 @@ fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(16, 8))
 
 colors = ["#90CAF9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
 
-sns.barplot(x="order_id", y="product_category_name", data=sum_order_items_df.head(5), palette=colors, ax=ax[0])
+sns.barplot(y="order_id", x="product_category_name", data=sum_order_items_df.head(5), palette=colors, ax=ax[0])
 ax[0].set_ylabel(None)
 ax[0].set_xlabel("Number of Sales", fontsize=15)
 ax[0].set_title("Best Performing Product", loc="center", fontsize=20)
 ax[0].tick_params(axis='y', labelsize=15)
 ax[0].tick_params(axis='x', labelsize=15)
 
-sns.barplot(x="order_id", y="product_category_name", data=sum_order_items_df.sort_values(by="order_id", ascending=True).head(5), palette=colors, ax=ax[1])
+sns.barplot(y="order_id", x="product_category_name", data=sum_order_items_df.sort_values(by="order_id", ascending=True).head(5), palette=colors, ax=ax[1])
 ax[1].set_ylabel(None)
 ax[1].set_xlabel("Number of Sales", fontsize=15)
 ax[1].invert_xaxis()
@@ -199,16 +199,16 @@ fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(16, 8))
 
 colors = ["#90CAF9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
 
-sns.barplot(x="payment_value", y="product_category_name", data=sum_payment_value_items_df.head(5), palette=colors, ax=ax[0])
-ax[0].set_ylabel(None)
-ax[0].set_xlabel("Number of Sales", fontsize=15)
+sns.barplot(y="payment_value", x="product_category_name", data=sum_payment_value_items_df.head(5), palette=colors, ax=ax[0])
+ax[0].set_ylabel("Nilai Transaksi")
+ax[0].set_xlabel("Kategori Produk", fontsize=15)
 ax[0].set_title("Best Performing Product", loc="center", fontsize=20)
 ax[0].tick_params(axis='y', labelsize=15)
 ax[0].tick_params(axis='x', labelsize=15)
 
-sns.barplot(x="payment_value", y="product_category_name", data=sum_payment_value_items_df.sort_values(by="payment_value", ascending=True).head(5), palette=colors, ax=ax[1])
-ax[1].set_ylabel(None)
-ax[1].set_xlabel("Number of Sales", fontsize=15)
+sns.barplot(y="payment_value", x="product_category_name", data=sum_payment_value_items_df.sort_values(by="payment_value", ascending=True).head(5), palette=colors, ax=ax[1])
+ax[1].set_ylabel("Nilai Transaksi")
+ax[1].set_xlabel("Kategori Produk", fontsize=15)
 ax[1].invert_xaxis()
 ax[1].yaxis.set_label_position("right")
 ax[1].yaxis.tick_right()
