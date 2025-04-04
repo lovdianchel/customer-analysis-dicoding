@@ -6,42 +6,32 @@ from wordcloud import WordCloud
 from babel.numbers import format_currency
 sns.set(style='dark')
 
-def create_daily_orders_df(df):
-    daily_orders_df = df.resample(rule='D', on='order_approved_at').agg({
-        "order_id": "nunique",
-        "payment_value": "sum"
-    })
-    daily_orders_df = daily_orders_df.reset_index()
-    daily_orders_df.rename(columns={
-        "order_id": "order_count",
-        "payment_value": "revenue"
-    }, inplace=True)
-    
-    return daily_orders_df
-
 def create_sum_order_items_df(df):
-    sum_order_items_df = df.groupby("product_category_name").order_id.nunique().sort_values(ascending=False).reset_index()
+    sum_order_items_df = df.groupby("product_category_name")['order_id'].nunique().sort_values(ascending=False).reset_index()
     return sum_order_items_df
 
 
 def create_sum_payment_value_items(df):
-    sum_payment_value_items_df = df.groupby('product_category_name').payment_value.sum().sort_values(ascending=False).reset_index()
+    sum_payment_value_items_df = df.groupby('product_category_name')['payment_value'].sum().sort_values(ascending=False).reset_index()
     return sum_payment_value_items_df
 
-def create_rfm_df(df):
-    rfm_df = df.groupby(by="customer_id", as_index=False).agg({
-        "order_approved_at": "max", #mengambil tanggal order terakhir
-        "order_id": "nunique",
-        "payment_value": "sum"
-    })
-    rfm_df.columns = ["customer_id", "max_order_timestamp", "frequency", "monetary"]
+# def create_rfm_df(df):
+#     df = df.copy()  # Membuat salinan DataFrame untuk menghindari modifikasi global
+#     customer_id_mapping = {customer_id: i +1 for i, customer_id in enumerate(df['customer_id'].unique())}
+#     df['id'] = df['customer_id'].map(customer_id_mapping)
+
+#     rfm_df = df.groupby(by='id', as_index=False).agg({
+#         "order_approved_at": "max",
+#         "order_id": "nunique",
+#         "payment_value": "sum"
+#     })
+
+#     rfm_df.columns = ['customer_id', 'max_order_timestamp', 'frequency', 'monetary']
+#     rfm_df['max_order_timestamp'] = pd.to_datetime(rfm_df['max_order_timestamp'])
+#     recent_date = pd.to_datetime(df['order_approved_at']).max()
+#     rfm_df['recency'] = rfm_df['max_order_timestamp'].apply(lambda x: (recent_date - x).days)
     
-    rfm_df["max_order_timestamp"] = rfm_df["max_order_timestamp"].dt.date
-    recent_date = df["order_approved_at"].dt.date.max()
-    rfm_df["recency"] = rfm_df["max_order_timestamp"].apply(lambda x: (recent_date - x).days)
-    rfm_df.drop("max_order_timestamp", axis=1, inplace=True)
-    
-    return rfm_df
+#     return rfm_df
 
 def create_wordcloud(df):
     # Menggabungkan semua komentar review dari kolom 'review_comment_message'
@@ -82,10 +72,10 @@ def create_time_series_data(df):
     
     return orders_per_day, sales_per_day, order_status_per_day
 
-file_url = "https://raw.githubusercontent.com/lovdianchel/customer-analysis-dicoding/refs/heads/main/dashboard/main_data.csv"
-all_df = pd.read_csv(file_url)
+# file_url = "https://raw.githubusercontent.com/lovdianchel/customer-analysis-dicoding/refs/heads/main/dashboard/main_data.csv"
+all_df = pd.read_csv('main_data.csv')
 
-datetime_columns = ["order_approved_at", "order_delivered_customer_date"]
+datetime_columns = ["order_approved_at", "order_delivered_carrier_date", "order_delivered_customer_date", "order_estimated_delivery_date"]
 all_df.sort_values(by="order_approved_at", inplace=True)
 all_df.reset_index(inplace=True)
 
@@ -109,14 +99,13 @@ with st.sidebar:
 main_df = all_df[(all_df["order_approved_at"] >= str(start_date)) & 
                 (all_df["order_approved_at"] <= str(end_date))]
 
-daily_orders_df = create_daily_orders_df(main_df)
-sum_order_items_df = create_sum_order_items_df(main_df)
-sum_payment_value_items_df = create_sum_payment_value_items(main_df)
-wordcloud = create_wordcloud(main_df)
-customer_state_df = create_customer_state(main_df)
-customer_city_df = create_customer_city(main_df)
-rfm_df = create_rfm_df(main_df)
-orders_per_day, sales_per_day, order_status_per_day = create_time_series_data(main_df)
+sum_order_items_df = create_sum_order_items_df(all_df)
+sum_payment_value_items_df = create_sum_payment_value_items(all_df)
+wordcloud = create_wordcloud(all_df)
+customer_state_df = create_customer_state(all_df)
+customer_city_df = create_customer_city(all_df)
+# rfm_df = create_rfm_df(all_df)
+orders_per_day, sales_per_day, order_status_per_day = create_time_series_data(all_df)
 
 st.header('Final Project Analysis Data Python :sparkles:')
 
@@ -124,47 +113,49 @@ st.subheader("Data Overview")
 st.write(all_df)
 
 
-st.subheader("Best Customer Based on RFM Parameters")
+# st.subheader("Best Customer Based on RFM Parameters")
 
-col1, col2, col3 = st.columns(3)
+# st.write(all_df.isna().sum())
 
-with col1:
-    avg_recency = round(rfm_df.recency.mean(), 1)
-    st.metric("Average Recency (days)", value=avg_recency)
+# col1, col2, col3 = st.columns(3)
 
-with col2:
-    avg_frequency = round(rfm_df.frequency.mean(), 2)
-    st.metric("Average Frequency", value=avg_frequency)
+# with col1:
+#     avg_recency = round(rfm_df.recency.mean(), 1)
+#     st.metric("Average Recency (days)", value=avg_recency)
 
-with col3:
-    avg_frequency = format_currency(rfm_df.monetary.mean(), "AUD", locale='es_CO') 
-    st.metric("Average Monetary", value=avg_frequency)
+# with col2:
+#     avg_frequency = round(rfm_df.frequency.mean(), 2)
+#     st.metric("Average Frequency", value=avg_frequency)
 
-fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(35, 15))
-colors = ["#90CAF9", "#90CAF9", "#90CAF9", "#90CAF9", "#90CAF9"]
+# with col3:
+#     avg_frequency = format_currency(rfm_df.monetary.mean(), "AUD", locale='es_CO') 
+#     st.metric("Average Monetary", value=avg_frequency)
 
-sns.barplot(y="recency", x="customer_id", data=rfm_df.sort_values(by="recency", ascending=True).head(5), palette=colors, ax=ax[0])
-ax[0].set_ylabel(None)
-ax[0].set_xlabel("customer_id", fontsize=30)
-ax[0].set_title("By Recency (days)", loc="center", fontsize=50)
-ax[0].tick_params(axis='y', labelsize=30)
-ax[0].tick_params(axis='x', labelsize=35)
+# fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(35, 15))
+# colors = ["#90CAF9", "#90CAF9", "#90CAF9", "#90CAF9", "#90CAF9"]
 
-sns.barplot(y="frequency", x="customer_id", data=rfm_df.sort_values(by="frequency", ascending=False).head(5), palette=colors, ax=ax[1])
-ax[1].set_ylabel(None)
-ax[1].set_xlabel("customer_id", fontsize=30)
-ax[1].set_title("By Frequency", loc="center", fontsize=50)
-ax[1].tick_params(axis='y', labelsize=30)
-ax[1].tick_params(axis='x', labelsize=35)
+# sns.barplot(y="recency", x="customer_id", data=rfm_df.sort_values(by="recency", ascending=True).head(5), palette=colors, ax=ax[0])
+# ax[0].set_ylabel(None)
+# ax[0].set_xlabel("customer_id", fontsize=30)
+# ax[0].set_title("By Recency (days)", loc="center", fontsize=50)
+# ax[0].tick_params(axis='y', labelsize=30)
+# ax[0].tick_params(axis='x', labelsize=35)
 
-sns.barplot(y="monetary", x="customer_id", data=rfm_df.sort_values(by="monetary", ascending=False).head(5), palette=colors, ax=ax[2])
-ax[2].set_ylabel(None)
-ax[2].set_xlabel("customer_id", fontsize=30)
-ax[2].set_title("By Monetary", loc="center", fontsize=50)
-ax[2].tick_params(axis='y', labelsize=30)
-ax[2].tick_params(axis='x', labelsize=35)
+# sns.barplot(y="frequency", x="customer_id", data=rfm_df.sort_values(by="frequency", ascending=False).head(5), palette=colors, ax=ax[1])
+# ax[1].set_ylabel(None)
+# ax[1].set_xlabel("customer_id", fontsize=30)
+# ax[1].set_title("By Frequency", loc="center", fontsize=50)
+# ax[1].tick_params(axis='y', labelsize=30)
+# ax[1].tick_params(axis='x', labelsize=35)
 
-st.pyplot(fig)
+# sns.barplot(y="monetary", x="customer_id", data=rfm_df.sort_values(by="monetary", ascending=False).head(5), palette=colors, ax=ax[2])
+# ax[2].set_ylabel(None)
+# ax[2].set_xlabel("customer_id", fontsize=30)
+# ax[2].set_title("By Monetary", loc="center", fontsize=50)
+# ax[2].tick_params(axis='y', labelsize=30)
+# ax[2].tick_params(axis='x', labelsize=35)
+
+# st.pyplot(fig)
 
 # Pertanyaan 1
 st.subheader("Produk yang Paling Sering Terjual")
