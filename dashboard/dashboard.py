@@ -73,17 +73,18 @@ def create_time_series_data(df):
     return orders_per_day, sales_per_day, order_status_per_day
 
 # file_url = "https://raw.githubusercontent.com/lovdianchel/customer-analysis-dicoding/refs/heads/main/dashboard/main_data.csv"
-all_df = pd.read_csv('main_data.csv')
+all_df = pd.read_csv('all_data.csv')
 
 datetime_columns = ["order_approved_at", "order_delivered_carrier_date", "order_delivered_customer_date", "order_estimated_delivery_date"]
 all_df.sort_values(by="order_approved_at", inplace=True)
 all_df.reset_index(inplace=True)
 
 for column in datetime_columns:
-    all_df[column] = pd.to_datetime(all_df[column], format="%Y-%m-%d %H:%M:%S", errors='coerce')
+    all_df[column] = pd.to_datetime(all_df[column], format='mixed')
 
 min_date = all_df["order_approved_at"].min()
 max_date = all_df["order_approved_at"].max()
+
 
 with st.sidebar:
     # Menambahkan logo perusahaan
@@ -99,18 +100,18 @@ with st.sidebar:
 main_df = all_df[(all_df["order_approved_at"] >= str(start_date)) & 
                 (all_df["order_approved_at"] <= str(end_date))]
 
-sum_order_items_df = create_sum_order_items_df(all_df)
-sum_payment_value_items_df = create_sum_payment_value_items(all_df)
-wordcloud = create_wordcloud(all_df)
-customer_state_df = create_customer_state(all_df)
-customer_city_df = create_customer_city(all_df)
+sum_order_items_df = create_sum_order_items_df(main_df)
+sum_payment_value_items_df = create_sum_payment_value_items(main_df)
+wordcloud = create_wordcloud(main_df)
+customer_state_df = create_customer_state(main_df)
+customer_city_df = create_customer_city(main_df)
 # rfm_df = create_rfm_df(all_df)
-orders_per_day, sales_per_day, order_status_per_day = create_time_series_data(all_df)
+orders_per_day, sales_per_day, order_status_per_day = create_time_series_data(main_df)
 
 st.header('Final Project Analysis Data Python :sparkles:')
 
-st.subheader("Data Overview")
-st.write(all_df)
+# st.subheader("Data Overview")
+# st.write(all_df)
 
 
 # st.subheader("Best Customer Based on RFM Parameters")
@@ -160,20 +161,20 @@ st.write(all_df)
 # Pertanyaan 1
 st.subheader("Produk yang Paling Sering Terjual")
 
-fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(16, 8))
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(24, 6))
 
 colors = ["#90CAF9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
 
 sns.barplot(y="order_id", x="product_category_name", data=sum_order_items_df.head(5), palette=colors, ax=ax[0])
-ax[0].set_ylabel(None)
-ax[0].set_xlabel("Number of Sales", fontsize=15)
+ax[0].set_ylabel("Jumlah Order")
+ax[0].set_xlabel("Kategori Produk", fontsize=15)
 ax[0].set_title("Best Performing Product", loc="center", fontsize=20)
 ax[0].tick_params(axis='y', labelsize=15)
 ax[0].tick_params(axis='x', labelsize=15)
 
 sns.barplot(y="order_id", x="product_category_name", data=sum_order_items_df.sort_values(by="order_id", ascending=True).head(5), palette=colors, ax=ax[1])
-ax[1].set_ylabel(None)
-ax[1].set_xlabel("Number of Sales", fontsize=15)
+ax[1].set_ylabel("Jumlah Order")
+ax[1].set_xlabel("Kateogri Produk", fontsize=15)
 ax[1].invert_xaxis()
 ax[1].yaxis.set_label_position("right")
 ax[1].yaxis.tick_right()
@@ -184,30 +185,30 @@ ax[1].tick_params(axis='x', labelsize=15)
 st.pyplot(fig)
 
 # Pertanyaan 2
-st.subheader("Produk Terjual Berdasarkan Total Nilai Transaksi")
+# st.subheader("Produk Terjual Berdasarkan Total Nilai Transaksi")
 
-fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(16, 8))
+# fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(24, 6))
 
-colors = ["#90CAF9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
+# colors = ["#90CAF9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
 
-sns.barplot(y="payment_value", x="product_category_name", data=sum_payment_value_items_df.head(5), palette=colors, ax=ax[0])
-ax[0].set_ylabel("Nilai Transaksi")
-ax[0].set_xlabel("Kategori Produk", fontsize=15)
-ax[0].set_title("Best Performing Product", loc="center", fontsize=20)
-ax[0].tick_params(axis='y', labelsize=15)
-ax[0].tick_params(axis='x', labelsize=15)
+# sns.barplot(y="payment_value", x="product_category_name", data=sum_payment_value_items_df.head(5), palette=colors, ax=ax[0])
+# ax[0].set_ylabel("Nilai Transaksi")
+# ax[0].set_xlabel("Kategori Produk", fontsize=15)
+# ax[0].set_title("Best Performing Product", loc="center", fontsize=20)
+# ax[0].tick_params(axis='y', labelsize=15)
+# ax[0].tick_params(axis='x', labelsize=15)
 
-sns.barplot(y="payment_value", x="product_category_name", data=sum_payment_value_items_df.sort_values(by="payment_value", ascending=True).head(5), palette=colors, ax=ax[1])
-ax[1].set_ylabel("Nilai Transaksi")
-ax[1].set_xlabel("Kategori Produk", fontsize=15)
-ax[1].invert_xaxis()
-ax[1].yaxis.set_label_position("right")
-ax[1].yaxis.tick_right()
-ax[1].set_title("Worst Performing Product", loc="center", fontsize=20)
-ax[1].tick_params(axis='y', labelsize=15)
-ax[1].tick_params(axis='x', labelsize=15)
+# sns.barplot(y="payment_value", x="product_category_name", data=sum_payment_value_items_df.sort_values(by="payment_value", ascending=True).head(5), palette=colors, ax=ax[1])
+# ax[1].set_ylabel("Nilai Transaksi")
+# ax[1].set_xlabel("Kategori Produk", fontsize=15)
+# ax[1].invert_xaxis()
+# ax[1].yaxis.set_label_position("right")
+# ax[1].yaxis.tick_right()
+# ax[1].set_title("Worst Performing Product", loc="center", fontsize=20)
+# ax[1].tick_params(axis='y', labelsize=15)
+# ax[1].tick_params(axis='x', labelsize=15)
 
-st.pyplot(fig)
+# st.pyplot(fig)
 
 # Pertanyaan 3
 
@@ -254,57 +255,57 @@ axes[1, 1].set_title("City dengan customer paling sedikit", loc="center", fontsi
 
 st.pyplot(fig)
 
-# Pertanyaan 5
-st.subheader("Time Series")
-# Plot 1: Distribusi Order per Bulan
-fig, ax = plt.subplots(figsize=(16, 8))
-ax.plot(
-    orders_per_day,
-    marker='o', 
-    linewidth=2,
-    color="#90CAF9",
-    label="Jumlah Order"
-)
-ax.set_xlabel("Tanggal")
-ax.set_ylabel("Jumlah Order (qty)")
-ax.set_title("Jumlah Order per Hari")
-ax.tick_params(axis='y', labelsize=20)
-ax.tick_params(axis='x', labelsize=15)
+# # Pertanyaan 5
+# st.subheader("Time Series")
+# # Plot 1: Distribusi Order per Bulan
+# fig, ax = plt.subplots(figsize=(16, 8))
+# ax.plot(
+#     orders_per_day,
+#     marker='o', 
+#     linewidth=2,
+#     color="#90CAF9",
+#     label="Jumlah Order"
+# )
+# ax.set_xlabel("Tanggal")
+# ax.set_ylabel("Jumlah Order (qty)")
+# ax.set_title("Jumlah Order per Hari")
+# ax.tick_params(axis='y', labelsize=20)
+# ax.tick_params(axis='x', labelsize=15)
 
-st.pyplot(fig)
+# st.pyplot(fig)
 
-# Plot 2: Tren Penjualan Per Bulan
+# # Plot 2: Tren Penjualan Per Bulan
 
-fig, ax = plt.subplots(figsize=(16, 8))
-ax.plot(
-    sales_per_day,
-    marker='o', 
-    linewidth=2,
-    color="g",
-    label="Total Penjualan (payment value)"
-)
-ax.set_xlabel("Tanggal")
-ax.set_ylabel("Total Penjualan ($)")
-ax.set_title("Tren Penjualan")
-ax.tick_params(axis='y', labelsize=20)
-ax.tick_params(axis='x', labelsize=15)
+# fig, ax = plt.subplots(figsize=(16, 8))
+# ax.plot(
+#     sales_per_day,
+#     marker='o', 
+#     linewidth=2,
+#     color="g",
+#     label="Total Penjualan (payment value)"
+# )
+# ax.set_xlabel("Tanggal")
+# ax.set_ylabel("Total Penjualan ($)")
+# ax.set_title("Tren Penjualan")
+# ax.tick_params(axis='y', labelsize=20)
+# ax.tick_params(axis='x', labelsize=15)
 
-st.pyplot(fig)
+# st.pyplot(fig)
 
-# Plot 3: Status Order per Bulan
+# # Plot 3: Status Order per Bulan
 
-fig, ax = plt.subplots(figsize=(16, 8))
-ax.plot(
-    order_status_per_day,
-    # kind="bar",
-    # stacked=True,
-    # color=['gray', 'green', 'blue', 'orange', 'black', 'yellow', 'red', 'pink'],
-    label="Status Order per Bulan"
-)
-ax.set_xlabel("Tanggal")
-ax.set_ylabel("Jumlah Order")
-ax.set_title("Status Order")
-ax.tick_params(axis='y', labelsize=20)
-ax.tick_params(axis='x', labelsize=15)
+# fig, ax = plt.subplots(figsize=(16, 8))
+# ax.plot(
+#     order_status_per_day,
+#     # kind="bar",
+#     # stacked=True,
+#     # color=['gray', 'green', 'blue', 'orange', 'black', 'yellow', 'red', 'pink'],
+#     label="Status Order per Bulan"
+# )
+# ax.set_xlabel("Tanggal")
+# ax.set_ylabel("Jumlah Order")
+# ax.set_title("Status Order")
+# ax.tick_params(axis='y', labelsize=20)
+# ax.tick_params(axis='x', labelsize=15)
 
-st.pyplot(fig)
+# st.pyplot(fig)
